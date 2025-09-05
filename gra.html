@@ -5,64 +5,41 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>STACJA 4</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<link rel="icon" href="bhl.jpg" type="image/jpeg">
-  <link rel="shortcut icon" href="bhl.jpg" type="image/jpeg">
+  <link rel="icon" href="bhl.jpg" type="image/jpeg">
 
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       height: 100%;
     }
     body {
       font-family: 'Share Tech Mono', monospace;
       background-color: #0a0a0a;
       color: #00ffcc;
-      min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    .stars {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background: black;
-    }
     .container {
+      width: 95%;
       max-width: 900px;
-      margin: 40px auto;
+      margin: 20px auto;
       padding: 20px;
       background: rgba(0, 0, 0, 0.75);
       border: 2px solid #00ffcc;
       border-radius: 12px;
       text-align: center;
     }
-    h1 {
-      color: #ff0055;
-      font-size: 1.8rem;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-    .hud {
-      display: flex;
-      justify-content: space-between;
-      font-size: 1rem;
-      margin-bottom: 10px;
-    }
-    .goal {
-      font-weight: bold;
-      color: #ff0055;
-    }
+    h1 { color: #ff0055; font-size: 1.8rem; margin: 10px 0; }
     canvas {
       display: block;
+      width: 100%;
+      height: auto;
       background: linear-gradient(180deg,#000 0%, #050505 100%);
       border: 2px solid #00ffcc;
       border-radius: 8px;
       margin: 10px auto;
-      max-width: 100%;
     }
     .controls {
       display: flex;
@@ -88,7 +65,7 @@
     .overlay {
       position: fixed;
       inset: 0;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       background: rgba(0, 0, 0, 0.8);
@@ -99,86 +76,38 @@
       border: 2px solid #00ffcc;
       padding: 20px;
       border-radius: 12px;
-      max-width: 700px;
-      width: 90%;
-      text-align: center;
-    }
-    pre {
-      background: #050505;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #00ffcc;
-      overflow-x: auto;
-      margin: 15px 0;
-    }
-    .info {
-      font-size: 0.9rem;
-      color: #00ffcc;
+      max-width: 90%;
+      width: 400px;
       text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="stars">
-    <canvas id="starsCanvas"></canvas>
-  </div>
-
   <div class="container">
-    <h1>Go, T-Rex! Go! </h1>
+    <h1>Go, T-Rex! Go!</h1>
     <div class="hud">
       <div>Wynik: <span id="score">0</span></div>
       <div>Życia: <span id="lives">3</span></div>
-      <div class="goal">Cel: 25 pkt</div>
+      <div class="goal">Cel: 50 pkt</div>
     </div>
-    <canvas id="game" width="860" height="160"></canvas>
+    <canvas id="game"></canvas>
     <div class="controls">
       <button id="startBtn">START</button>
       <button id="resetBtn">RESET</button>
     </div>
-    <p class="info">Sterowanie: <strong>Spacja</strong> = skok</p>
+    <p>Sterowanie: <strong>Spacja / Dotknięcie</strong> = skok</p>
   </div>
 
-  <div id="solutionOverlay" class="overlay" style="display:none">
+  <div id="solutionOverlay" class="overlay">
     <div class="card">
       <h2 id="endMessage"></h2>
       <pre id="secret"></pre>
-      <button id="closeSol">Zamknij</button>
       <button id="playAgain">Zagraj ponownie</button>
       <button id="finalScreen" style="display:none">EKRAN FINAŁOWY</button>
     </div>
   </div>
 
   <script>
-    // ---- GWIAZDY W TLE ----
-    const scanvas = document.getElementById("starsCanvas");
-    const sctx = scanvas.getContext("2d");
-    function resizeStars() {
-      scanvas.width = window.innerWidth;
-      scanvas.height = window.innerHeight;
-    }
-    resizeStars();
-    const stars = Array.from({length: 100}, () => ({
-      x: Math.random() * scanvas.width,
-      y: Math.random() * scanvas.height,
-      speed: 0.5 + Math.random() * 1.5
-    }));
-    function drawStars() {
-      sctx.fillStyle = "black";
-      sctx.fillRect(0, 0, scanvas.width, scanvas.height);
-      sctx.fillStyle = "#00ffcc";
-      for (const star of stars) {
-        sctx.fillRect(star.x, star.y, 2, 2);
-        star.y += star.speed;
-        if (star.y > scanvas.height) {
-          star.y = 0;
-          star.x = Math.random() * scanvas.width;
-        }
-      }
-    }
-    setInterval(drawStars, 50);
-    window.addEventListener('resize', resizeStars);
-
-    // ---- GRA LOGIKA ----
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
@@ -186,154 +115,175 @@
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
     const overlay = document.getElementById('solutionOverlay');
-    const closeSol = document.getElementById('closeSol');
     const playAgain = document.getElementById('playAgain');
     const finalScreen = document.getElementById('finalScreen');
     const endMessage = document.getElementById('endMessage');
     const secret = document.getElementById('secret');
 
+    // Dynamiczne dopasowanie canvas
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = 160;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
     const CONFIG = {
-      goalPoints: 25,
-      obstacleSpeed: 3,
-      spawnIntervalMin: 900,
-      spawnIntervalMax: 1700,
-      coinChance: 0.5,
+      goalPoints: 50,
+      speed: 3,
       gravity: 0.9,
       jumpPower: -16,
-      playerWidth: 40,
-      playerHeight: 35
+      playerW: 40,
+      playerH: 35
     };
 
-    let running = false, lastSpawn=0, spawnTimer=0, score=0, lives=3, obstacles=[], collectibles=[];
-    const player = { x:60, y:canvas.height-CONFIG.playerHeight-18, vy:0, w:CONFIG.playerWidth, h:CONFIG.playerHeight, onGround:true };
+    let running = false, score=0, lives=3;
+    let obstacles = [], collectibles = [];
+    let player = {x:60, y:0, vy:0, w:CONFIG.playerW, h:CONFIG.playerH, onGround:true};
+    player.y = canvas.height - player.h - 16;
 
-    let collectibleSequence = ["B", "#", "L"];
-    let collectibleIndex = 0;
+    let spawnTimer = 0;
+    const sequence = ["B","#","L"];
+    let seqIndex = 0;
 
-    function drawGround() {
-      ctx.fillStyle='#050505';
-      ctx.fillRect(0, canvas.height-16, canvas.width,16);
+    function resetGame() {
+      running = false;
+      score = 0;
+      lives = 3;
+      obstacles = [];
+      collectibles = [];
+      player.y = canvas.height - player.h - 16;
+      player.vy = 0;
+      player.onGround = true;
+      scoreEl.textContent = score;
+      livesEl.textContent = lives;
+      overlay.style.display = 'none';
+    }
+
+    function startGame() {
+      if (!running) {
+        running = true;
+        spawnTimer = performance.now();
+        requestAnimationFrame(loop);
+      }
     }
 
     function spawnEntity() {
       const now = performance.now();
-      if(now - spawnTimer < (lastSpawn||0)) return;
-      lastSpawn = Math.random()*(CONFIG.spawnIntervalMax-CONFIG.spawnIntervalMin)+CONFIG.spawnIntervalMin;
-      spawnTimer = now + lastSpawn;
+      if (now - spawnTimer < 1000) return;
+      spawnTimer = now;
 
-      if(Math.random()<CONFIG.coinChance){
-        const symbol = collectibleSequence[collectibleIndex];
-        collectibleIndex = (collectibleIndex + 1) % collectibleSequence.length;
+      if (Math.random() < 0.5) {
+        // collectible
         collectibles.push({
-          x: canvas.width+20,
-          y: canvas.height-52-Math.random()*40,
+          x: canvas.width,
+          y: canvas.height - 60 - Math.random()*40,
           w: 20, h: 20,
-          symbol: symbol
+          symbol: sequence[seqIndex]
         });
+        seqIndex = (seqIndex + 1) % sequence.length;
       } else {
-        const h=22+Math.random()*28;
-        obstacles.push({x:canvas.width+10,y:canvas.height-16-h,w:18+Math.random()*20,h:h});
+        // obstacle
+        const h = 30 + Math.random()*20;
+        obstacles.push({
+          x: canvas.width,
+          y: canvas.height - h - 16,
+          w: 20, h: h
+        });
       }
-    }
-
-    function resetGame() {
-      running=false; score=0; lives=3; obstacles=[]; collectibles=[];
-      player.y=canvas.height-player.h-18; player.vy=0; player.onGround=true;
-      scoreEl.textContent=score; livesEl.textContent=lives;
-      overlay.style.display='none'; finalScreen.style.display='none';
-    }
-
-    function startGame() {
-      if(running) return;
-      running=true; lastSpawn=0; spawnTimer=0;
-      requestAnimationFrame(loop);
-    }
-
-    function collided(a,b) {
-      return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
     }
 
     function loop() {
       ctx.clearRect(0,0,canvas.width,canvas.height);
-      if(running) spawnEntity();
+      if (running) spawnEntity();
 
-      obstacles.forEach((ob,i)=>{
-        ob.x-=CONFIG.obstacleSpeed;
-        ctx.fillStyle='#b45309';
-        ctx.fillRect(ob.x,ob.y,ob.w,ob.h);
-        if(collided(player,ob)){
-          obstacles.splice(i,1); lives--;
-          livesEl.textContent=lives;
-          if(lives<=0){
-            running=false;
-            overlay.style.display='flex';
-            endMessage.textContent="PRZEGRAŁEŚ SPRÓBUJ PONOWNIE";
-            secret.textContent="";
-            finalScreen.style.display='none';
-          }
+      // Draw obstacles
+      for (let i=obstacles.length-1; i>=0; i--) {
+        const ob = obstacles[i];
+        ob.x -= CONFIG.speed;
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(ob.x, ob.y, ob.w, ob.h);
+        if (collision(player, ob)) {
+          obstacles.splice(i,1);
+          lives--;
+          livesEl.textContent = lives;
+          if (lives <= 0) endGame(false);
+        } else if (ob.x + ob.w < 0) {
+          obstacles.splice(i,1);
         }
-        if(ob.x+ob.w<-50) obstacles.splice(i,1);
-      });
+      }
 
-      collectibles.forEach((c,i)=>{
-        c.x-=CONFIG.obstacleSpeed;
-        ctx.fillStyle='#f59e0b';
+      // Draw collectibles
+      for (let i=collectibles.length-1; i>=0; i--) {
+        const c = collectibles[i];
+        c.x -= CONFIG.speed;
+        ctx.fillStyle = '#f59e0b';
         ctx.fillRect(c.x,c.y,c.w,c.h);
-        ctx.fillStyle='#fff';
+        ctx.fillStyle = '#fff';
         ctx.font="16px Share Tech Mono";
         ctx.fillText(c.symbol, c.x+5, c.y+15);
-
-        if(collided(player,c)){
+        if (collision(player,c)) {
           collectibles.splice(i,1);
-          score+=3; scoreEl.textContent=score;
-          if(score>=CONFIG.goalPoints){
-            running=false;
-            overlay.style.display='flex';
-            endMessage.textContent="WYGRAŁEŚ!";
-            secret.textContent="KOD: 25";
-            finalScreen.style.display='inline-block';
-          }
+          score += 3;
+          scoreEl.textContent = score;
+          if (score >= CONFIG.goalPoints) endGame(true);
+        } else if (c.x + c.w < 0) {
+          collectibles.splice(i,1);
         }
-        if(c.x+c.w<-50) collectibles.splice(i,1);
-      });
+      }
 
-      // Dinozaur
-      player.vy+=CONFIG.gravity; player.y+=player.vy;
-      if(player.y>=canvas.height-player.h-18){
-        player.y=canvas.height-player.h-18;
-        player.vy=0;
-        player.onGround=true;
-      } else player.onGround=false;
+      // Player physics
+      player.vy += CONFIG.gravity;
+      player.y += player.vy;
+      if (player.y >= canvas.height - player.h - 16) {
+        player.y = canvas.height - player.h - 16;
+        player.vy = 0;
+        player.onGround = true;
+      }
 
-      ctx.fillStyle='#9ae6b4';
-      ctx.fillRect(player.x,player.y,player.w,player.h); // ciało
-      ctx.fillRect(player.x+player.w-8,player.y+5,10,10); // głowa
-      ctx.fillStyle='#000';
-      ctx.fillRect(player.x+player.w-4,player.y+7,3,3); // oko
-      ctx.fillStyle='#0ea5a4';
-      ctx.fillRect(player.x+10,player.y+player.h-8,15,4); // nogi
+      ctx.fillStyle = '#9ae6b4';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
 
-      drawGround();
-      if(running) requestAnimationFrame(loop);
+      if (running) requestAnimationFrame(loop);
     }
 
-    window.addEventListener('keydown',e=>{
-      if(e.code==='Space'){
+    function collision(a,b) {
+      return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+    }
+
+    function jump() {
+      if (player.onGround) {
+        player.vy = CONFIG.jumpPower;
+        player.onGround = false;
+      }
+    }
+
+    function endGame(win) {
+      running = false;
+      overlay.style.display = 'flex';
+      endMessage.textContent = win ? "WYGRAŁEŚ!" : "PRZEGRAŁEŚ!";
+      secret.textContent = win ? "KOD: 25" : "";
+      finalScreen.style.display = win ? 'inline-block' : 'none';
+    }
+
+    // Event listeners
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
         e.preventDefault();
-        if(!running) startGame();
-        if(player.onGround){ player.vy=CONFIG.jumpPower; player.onGround=false; }
+        if (!running) startGame();
+        jump();
       }
     });
 
-    startBtn.addEventListener('click',()=>startGame());
-    resetBtn.addEventListener('click',()=>resetGame());
-    closeSol.addEventListener('click',()=>overlay.style.display='none');
-    playAgain.addEventListener('click',()=>{
-      resetGame();
-      startGame();
-      overlay.style.display='none';
+    canvas.addEventListener('click', () => {
+      if (!running) startGame();
+      jump();
     });
-    finalScreen.addEventListener('click',()=>window.location.href='finał.html');
+
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', resetGame);
+    playAgain.addEventListener('click', () => { resetGame(); startGame(); });
+    finalScreen.addEventListener('click', () => window.location.href = 'final.html');
 
     resetGame();
   </script>
