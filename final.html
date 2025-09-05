@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FINAŁ</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="icon" href="bhl.jpg" type="image/jpeg">
+<link rel="shortcut icon" href="bhl.jpg" type="image/jpeg">
+<style>
+html, body {
+  margin:0; padding:0; height:100%;
+  background-color:#000;
+  font-family:'Share Tech Mono',monospace;
+  color:#00ffcc;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+#matrixCanvas {
+  position:fixed; top:0; left:0;
+  width:100vw; height:100vh;
+  z-index:0; pointer-events:none; user-select:none;
+}
+.container {
+  position:relative; z-index:1; max-width:640px; width:90vw;
+  background:rgba(0,0,0,0.85); border:2px solid #00ffcc; border-radius:12px;
+  box-shadow:0 0 20px #00ffcc; padding:20px; box-sizing:border-box; text-align:center;
+}
+h1 {
+  margin-top:0; font-size:28px; color:#ff0055; text-shadow:0 0 6px #ff0055; font-weight:bold;
+}
+p { font-size:16px; line-height:1.4em; }
+input[type="text"] {
+  width:100%; padding:12px 16px; font-size:18px; background:#000; color:#00ffcc;
+  border:2px solid #00ffcc; font-weight:bold; margin:10px 0; box-sizing:border-box;
+  border-radius:10px; outline-offset:2px; transition:border-color 0.3s, box-shadow 0.3s;
+  caret-color:#00ffcc;
+}
+input[type="text"]:focus {
+  border-color:#ff0055; box-shadow:0 0 8px #ff0055; background-color:#111;
+}
+button {
+  background:none; border:2px solid #00ffcc; color:#00ffcc; padding:14px 30px;
+  font-size:18px; cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase;
+  transition:background-color 0.3s,color 0.3s,box-shadow 0.3s;
+  text-shadow:0 0 6px #00ffcc; border-radius:10px; outline-offset:2px;
+}
+button:hover, button:focus { background-color:#00ffcc; color:#000; text-shadow:none; box-shadow:0 0 12px #00ffcc; }
+#error {
+  display:none; color:red; margin-top:20px; font-weight:bold; text-shadow:0 0 4px red;
+  animation:flicker 0.15s infinite alternate;
+}
+@keyframes flicker { from{opacity:1;} to{opacity:0.6;} }
+
+#lang-switch {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  z-index: 10;
+}
+#lang-switch button {
+  background: transparent;
+  border: 2px solid #00ffcc;
+  color: #00ffcc;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#lang-switch button:hover {
+  background-color:#00ffcc;
+  color:#000;
+}
+
+@media (max-width:480px){
+  h1{font-size:22px;} input[type="text"]{font-size:16px;padding:10px 12px;}
+  button{font-size:16px;padding:12px 24px;} .container{max-width:95vw;padding:15px;border-radius:8px;}
+}
+</style>
+</head>
+<body>
+<canvas id="matrixCanvas"></canvas>
+
+<!-- 🔘 Language switch -->
+<div id="lang-switch">
+  <button onclick="toggleLang()" aria-label="Change language">PL / EN</button>
+</div>
+
+<div class="container">
+<h1>&gt; FINAŁ</h1>
+<p id="mainText">Wpisz finałowy kod składający się z czterech fragmentów otrzymanych w poprzednich stacjach:</p>
+<input type="text" id="finalCode" placeholder="Wpisz kod" autocomplete="off" />
+<button id="submitBtn" onclick="checkCode()">Zatwierdź kod</button>
+<div id="error">Błędny kod! Spróbuj ponownie.</div>
+</div>
+
+<script>
+// 🔘 Language toggle
+let currentLang = "PL";
+function toggleLang() {
+  const h1 = document.querySelector('h1');
+  const p = document.getElementById('mainText');
+  const btn = document.getElementById('submitBtn');
+  const err = document.getElementById('error');
+
+  if(currentLang==="PL"){
+    h1.textContent="> FINAL";
+    p.textContent="Enter the final code consisting of four fragments obtained from the previous stations:";
+    btn.textContent="Submit Code";
+    err.textContent="Wrong code! Try again.";
+    currentLang="EN";
+  } else {
+    h1.textContent="> FINAŁ";
+    p.textContent="Wpisz finałowy kod składający się z czterech fragmentów otrzymanych w poprzednich stacjach:";
+    btn.textContent="Zatwierdź kod";
+    err.textContent="Błędny kod! Spróbuj ponownie.";
+    currentLang="PL";
+  }
+}
+
+// --- Ukryte hasło w postaci zakodowanej ---
+const encryptedCode = [90,96,108,114,118,91,92,92,95]; // zaszyfrowane liczby
+const shift = 42; // klucz przesunięcia
+
+function decodeCode(arr){
+  return arr.map(n => String.fromCharCode(n - shift)).join('');
+}
+
+function checkCode(){
+  const input = document.getElementById('finalCode').value.trim().toUpperCase();
+  const correct = decodeCode(encryptedCode);
+  const errorDiv = document.getElementById('error');
+  if(input === correct){
+    window.location.href = "formularz.html"; // poprawny kod
+  } else {
+    errorDiv.style.display = "block";
+  }
+}
+
+// --- Animacja matrix ---
+const canvas=document.getElementById('matrixCanvas');
+const ctx=canvas.getContext('2d');
+let width,height;
+const fontSize=18;
+const characters='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/-=+@#$%^&*';
+let columns,drops=[];
+
+function setup(){
+  width=window.innerWidth; height=window.innerHeight;
+  canvas.width=width*devicePixelRatio; canvas.height=height*devicePixelRatio;
+  ctx.setTransform(1,0,0,1,0,0); ctx.scale(devicePixelRatio,devicePixelRatio);
+  columns=Math.floor(width/fontSize);
+  drops=new Array(columns).fill(1);
+}
+
+function draw(time){
+  ctx.fillStyle='rgba(0,0,0,0.15)'; ctx.fillRect(0,0,width,height);
+  ctx.fillStyle='#00ffcc'; ctx.font=fontSize+'px "Share Tech Mono"';
+  for(let i=0;i<drops.length;i++){
+    const text=characters.charAt(Math.floor(Math.random()*characters.length));
+    const y=(drops[i]*fontSize)%height;
+    ctx.fillText(text,i*fontSize,y);
+    drops[i]=(drops[i]+1)%(height/fontSize);
+  }
+  requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize',setup);
+setup();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
