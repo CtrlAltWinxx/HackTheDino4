@@ -5,146 +5,326 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>STACJA 4</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="icon" href="bhl.jpg" type="image/jpeg">
-
   <style>
-    html, body {
-      margin: 0; padding: 0;
-      height: 100%;
-    }
     body {
-      font-family: 'Share Tech Mono', monospace;
-      background-color: #0a0a0a;
+      margin: 0;
+      background: #0a0a0a;
       color: #00ffcc;
-      overflow-x: hidden;
+      font-family: 'Share Tech Mono', monospace;
       display: flex;
       justify-content: center;
       align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
     }
     .container {
       width: 95%;
       max-width: 900px;
-      margin: 20px auto;
       padding: 20px;
       background: rgba(0, 0, 0, 0.75);
       border: 2px solid #00ffcc;
       border-radius: 12px;
       text-align: center;
+      position: relative;
     }
-    h1 { color: #ff0055; font-size: 1.8rem; margin: 10px 0; }
+    h1 { color: #ff0055; }
     canvas {
-      display: block;
       width: 100%;
       height: auto;
-      background: linear-gradient(180deg,#000 0%, #050505 100%);
       border: 2px solid #00ffcc;
       border-radius: 8px;
       margin: 10px auto;
-    }
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      background: linear-gradient(180deg, #000 0%, #050505 100%);
     }
     button {
       background: none;
       border: 2px solid #00ffcc;
       color: #00ffcc;
       padding: 8px 16px;
-      font-size: 1rem;
-      cursor: pointer;
+      margin: 5px;
       font-weight: bold;
-      text-transform: uppercase;
       border-radius: 6px;
+      cursor: pointer;
     }
     button:hover {
-      background-color: #00ffcc;
+      background: #00ffcc;
       color: #000;
     }
     .overlay {
       position: fixed;
       inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
       background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(3px);
+      display: none;
+      justify-content: center;
+      align-items: center;
     }
     .card {
       background: #000;
       border: 2px solid #00ffcc;
-      padding: 20px;
       border-radius: 12px;
-      max-width: 90%;
-      width: 400px;
+      padding: 20px;
       text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    .translate-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 14px;
+      padding: 6px 12px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Go, T-Rex! Go!</h1>
-    <div class="hud">
-      <div>Wynik: <span id="score">0</span></div>
-      <div>Życia: <span id="lives">3</span></div>
-      <div class="goal">Cel: 50 pkt</div>
+    <!-- Przycisk języka -->
+    <button class="translate-btn" id="translateBtn">EN</button>
+
+    <!-- Tytuł -->
+    <h1 data-pl="Go, T-Rex! Go!" data-en="Go, T-Rex! Go!">Go, T-Rex! Go!</h1>
+
+    <!-- Pasek informacji: nie podmieniamy całego HTML, tylko etykiety -->
+    <div id="gameInfo">
+      <span id="scoreLabel" data-pl="Wynik" data-en="Score">Wynik</span>:
+      <span id="score">0</span> |
+      <span id="livesLabel" data-pl="Życia" data-en="Lives">Życia</span>:
+      <span id="lives">3</span> |
+      <span id="goalLabel" data-pl="Cel" data-en="Goal">Cel</span>:
+      <span id="goal">111</span> <span id="ptsLabel" data-pl="pkt" data-en="pts">pkt</span>
     </div>
+
     <canvas id="game"></canvas>
-    <div class="controls">
-      <button id="startBtn">START</button>
-      <button id="resetBtn">RESET</button>
+
+    <div>
+      <button id="startBtn" data-pl="START" data-en="START">START</button>
+      <button id="resetBtn" data-pl="RESET" data-en="RESET">RESET</button>
     </div>
-    <p>Sterowanie: <strong>Spacja / Dotknięcie</strong> = skok</p>
+
+    <p>
+      <strong><span id="controlsText"
+        data-pl="Sterowanie: Spacja lub Dotknięcie ekranu gry = skok"
+        data-en="Controls: Space or Tap the game area = jump">
+        Sterowanie: Spacja lub Dotknięcie ekranu gry = skok
+      </span></strong>
+    </p>
+
+    <p class="instruction">
+      <span id="instruction"
+        data-pl="Zbieraj żetony B#L i unikaj drzew, aby przejść stację."
+        data-en="Collect B#L tokens and avoid trees to pass the stage.">
+        Zbieraj żetony B#L i unikaj drzew, aby przejść stację.
+      </span>
+    </p>
   </div>
 
-  <div id="solutionOverlay" class="overlay">
+  <div id="overlay" class="overlay">
     <div class="card">
-      <h2 id="endMessage"></h2>
+      <h2 id="endMessage" data-pl="WYGRAŁEŚ!" data-en="YOU WON!"></h2>
       <pre id="secret"></pre>
-      <button id="playAgain">Zagraj ponownie</button>
-      <button id="finalScreen" style="display:none">EKRAN FINAŁOWY</button>
+      <button id="playAgain" data-pl="Zagraj ponownie" data-en="Play again">Zagraj ponownie</button>
+      <button id="finalBtn" style="display:none" data-pl="EKRAN FINAŁOWY" data-en="FINAL SCREEN">EKRAN FINAŁOWY</button>
     </div>
   </div>
 
   <script>
+    /* =======================
+       SYSTEM TŁUMACZEŃ
+       ======================= */
+    const translateBtn = document.getElementById('translateBtn');
+    let currentLang = localStorage.getItem('lang') || 'pl';
+
+    function applyTranslation(lang) {
+      // Zmieniamy tylko tekst (textContent), nie innerHTML — nie wymieniamy węzłów!
+      document.querySelectorAll('[data-pl]').forEach(el => {
+        const t = el.getAttribute(`data-${lang}`);
+        if (t !== null) el.textContent = t;
+      });
+      translateBtn.textContent = lang === 'pl' ? 'EN' : 'PL';
+      // Aktualizacja dynamicznych etykiet zależnych od języka w overlay (gdyby był otwarty)
+      if (lastEndState !== null) {
+        endMessage.textContent = lastEndState
+          ? (lang === 'pl' ? "WYGRAŁEŚ!" : "YOU WON!")
+          : (lang === 'pl' ? "PRZEGRAŁEŚ!" : "YOU LOST!");
+      }
+    }
+
+    translateBtn.addEventListener('click', () => {
+      currentLang = currentLang === 'pl' ? 'en' : 'pl';
+      localStorage.setItem('lang', currentLang);
+      applyTranslation(currentLang);
+    });
+
+    /* =======================
+       UKRYTY SEKRET (XOR + Base64)
+       ======================= */
+    // "KOD: 25" zakodowany: najpierw XOR z kluczem 11, potem Base64
+    const SECRET_B64 = "QERPMSs5Pg==";
+    const SECRET_KEY = 11;
+    function decodeSecret(b64, key) {
+      const bin = atob(b64);
+      let out = "";
+      for (let i = 0; i < bin.length; i++) {
+        out += String.fromCharCode(bin.charCodeAt(i) ^ key);
+      }
+      return out;
+    }
+
+    /* =======================
+       GRA
+       ======================= */
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
     const livesEl = document.getElementById('lives');
-    const startBtn = document.getElementById('startBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const overlay = document.getElementById('solutionOverlay');
-    const playAgain = document.getElementById('playAgain');
-    const finalScreen = document.getElementById('finalScreen');
+    const goalEl  = document.getElementById('goal');
+
+    const overlay = document.getElementById('overlay');
     const endMessage = document.getElementById('endMessage');
     const secret = document.getElementById('secret');
+    const playAgain = document.getElementById('playAgain');
+    const finalBtn = document.getElementById('finalBtn');
 
-    // Dynamiczne dopasowanie canvas
     function resizeCanvas() {
       canvas.width = canvas.offsetWidth;
-      canvas.height = 160;
+      canvas.height = 180;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    const CONFIG = {
-      goalPoints: 50,
-      speed: 3,
-      gravity: 0.9,
-      jumpPower: -16,
-      playerW: 40,
-      playerH: 35
-    };
+    const CONFIG = { speed: 3, gravity: 0.9, jump: -16, goal: 111 };
+    goalEl.textContent = CONFIG.goal; // ustaw cel w UI
 
-    let running = false, score=0, lives=3;
+    let running = false;
+    let score = 0, lives = 3;
     let obstacles = [], collectibles = [];
-    let player = {x:60, y:0, vy:0, w:CONFIG.playerW, h:CONFIG.playerH, onGround:true};
+    let spawnTimer = 0;
+    const seq = ["B","#","L"];
+    let seqIndex = 0;
+    let lastEndState = null; // null / true (win) / false (lose)
+
+    const player = {x:60, y:0, vy:0, w:40, h:35, onGround:true, legPhase:0};
     player.y = canvas.height - player.h - 16;
 
-    let spawnTimer = 0;
-    const sequence = ["B","#","L"];
-    let seqIndex = 0;
+    // grafika dinozaura - nogi machają
+    function drawDino(p) {
+      ctx.fillStyle = '#9ae6b4';
+      ctx.fillRect(p.x, p.y, p.w, p.h);               // ciało
+      ctx.fillRect(p.x + p.w - 12, p.y + 5, 14, 14);  // głowa
+      // nogi animacja
+      ctx.fillRect(p.x + 8,  p.y + p.h - 6, 10, p.legPhase ? 6 : 4);
+      ctx.fillRect(p.x + 22, p.y + p.h - 6, 10, p.legPhase ? 4 : 6);
+      // oko
+      ctx.fillStyle = '#000';
+      ctx.fillRect(p.x + p.w - 6, p.y + 8, 3, 3);
+      p.legPhase = !p.legPhase;
+    }
+
+    function drawTree(o) {
+      ctx.fillStyle = '#6b4f2f';
+      ctx.fillRect(o.x + o.w/2 - 5, o.y, 10, o.h);
+      ctx.fillStyle = '#228B22';
+      ctx.beginPath();
+      ctx.arc(o.x + o.w/2, o.y, 20, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    function drawCollectible(c) {
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(c.x + c.w/2, c.y + c.h/2, c.w/2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = "bold 18px Share Tech Mono";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(c.symbol, c.x + c.w/2, c.y + c.h/2);
+    }
+
+    function jump() {
+      if (player.onGround) {
+        player.vy = CONFIG.jump;
+        player.onGround = false;
+      }
+    }
+
+    function spawnEntity() {
+      const now = performance.now();
+      if (now - spawnTimer < 1000) return; // co ~1s
+      spawnTimer = now;
+
+      if (Math.random() < 0.5) {
+        collectibles.push({
+          x: canvas.width,
+          y: canvas.height - 60 - Math.random()*40,
+          w: 36, h: 36,
+          symbol: seq[seqIndex]
+        });
+        seqIndex = (seqIndex + 1) % seq.length;
+      } else {
+        obstacles.push({
+          x: canvas.width,
+          y: canvas.height - 50,
+          w: 30,
+          h: 50
+        });
+      }
+    }
+
+    function collision(a,b) {
+      return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+    }
+
+    function loop() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      if (running) spawnEntity();
+
+      // przeszkody
+      for (let i=obstacles.length-1;i>=0;i--) {
+        const o = obstacles[i];
+        o.x -= CONFIG.speed;
+        drawTree(o);
+        if (collision(player,o)) {
+          obstacles.splice(i,1);
+          lives = Math.max(0, lives - 1);
+          livesEl.textContent = lives;
+          if (lives <= 0) endGame(false);
+        } else if (o.x + o.w < 0) {
+          obstacles.splice(i,1);
+        }
+      }
+
+      // monety/litery
+      for (let i=collectibles.length-1;i>=0;i--) {
+        const c = collectibles[i];
+        c.x -= CONFIG.speed;
+        drawCollectible(c);
+        if (collision(player,c)) {
+          collectibles.splice(i,1);
+          score += 3;
+          scoreEl.textContent = score;
+          if (score >= CONFIG.goal) endGame(true);
+        } else if (c.x + c.w < 0) {
+          collectibles.splice(i,1);
+        }
+      }
+
+      // fizyka gracza
+      player.vy += CONFIG.gravity;
+      player.y += player.vy;
+      if (player.y >= canvas.height - player.h - 16) {
+        player.y = canvas.height - player.h - 16;
+        player.vy = 0;
+        player.onGround = true;
+      }
+
+      drawDino(player);
+
+      if (running) requestAnimationFrame(loop);
+    }
 
     function resetGame() {
       running = false;
@@ -158,135 +338,41 @@
       scoreEl.textContent = score;
       livesEl.textContent = lives;
       overlay.style.display = 'none';
-    }
-
-    function startGame() {
-      if (!running) {
-        running = true;
-        spawnTimer = performance.now();
-        requestAnimationFrame(loop);
-      }
-    }
-
-    function spawnEntity() {
-      const now = performance.now();
-      if (now - spawnTimer < 1000) return;
-      spawnTimer = now;
-
-      if (Math.random() < 0.5) {
-        // collectible
-        collectibles.push({
-          x: canvas.width,
-          y: canvas.height - 60 - Math.random()*40,
-          w: 20, h: 20,
-          symbol: sequence[seqIndex]
-        });
-        seqIndex = (seqIndex + 1) % sequence.length;
-      } else {
-        // obstacle
-        const h = 30 + Math.random()*20;
-        obstacles.push({
-          x: canvas.width,
-          y: canvas.height - h - 16,
-          w: 20, h: h
-        });
-      }
-    }
-
-    function loop() {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      if (running) spawnEntity();
-
-      // Draw obstacles
-      for (let i=obstacles.length-1; i>=0; i--) {
-        const ob = obstacles[i];
-        ob.x -= CONFIG.speed;
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(ob.x, ob.y, ob.w, ob.h);
-        if (collision(player, ob)) {
-          obstacles.splice(i,1);
-          lives--;
-          livesEl.textContent = lives;
-          if (lives <= 0) endGame(false);
-        } else if (ob.x + ob.w < 0) {
-          obstacles.splice(i,1);
-        }
-      }
-
-      // Draw collectibles
-      for (let i=collectibles.length-1; i>=0; i--) {
-        const c = collectibles[i];
-        c.x -= CONFIG.speed;
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(c.x,c.y,c.w,c.h);
-        ctx.fillStyle = '#fff';
-        ctx.font="16px Share Tech Mono";
-        ctx.fillText(c.symbol, c.x+5, c.y+15);
-        if (collision(player,c)) {
-          collectibles.splice(i,1);
-          score += 3;
-          scoreEl.textContent = score;
-          if (score >= CONFIG.goalPoints) endGame(true);
-        } else if (c.x + c.w < 0) {
-          collectibles.splice(i,1);
-        }
-      }
-
-      // Player physics
-      player.vy += CONFIG.gravity;
-      player.y += player.vy;
-      if (player.y >= canvas.height - player.h - 16) {
-        player.y = canvas.height - player.h - 16;
-        player.vy = 0;
-        player.onGround = true;
-      }
-
-      ctx.fillStyle = '#9ae6b4';
-      ctx.fillRect(player.x, player.y, player.w, player.h);
-
-      if (running) requestAnimationFrame(loop);
-    }
-
-    function collision(a,b) {
-      return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
-    }
-
-    function jump() {
-      if (player.onGround) {
-        player.vy = CONFIG.jumpPower;
-        player.onGround = false;
-      }
+      lastEndState = null;
     }
 
     function endGame(win) {
       running = false;
       overlay.style.display = 'flex';
-      endMessage.textContent = win ? "WYGRAŁEŚ!" : "PRZEGRAŁEŚ!";
-      secret.textContent = win ? "KOD: 25" : "";
-      finalScreen.style.display = win ? 'inline-block' : 'none';
+      lastEndState = win;
+      endMessage.textContent = win
+        ? (currentLang === 'pl' ? "WYGRAŁEŚ!" : "YOU WON!")
+        : (currentLang === 'pl' ? "PRZEGRAŁEŚ!" : "YOU LOST!");
+      secret.textContent = win ? decodeSecret(SECRET_B64, SECRET_KEY) : "";
+      finalBtn.style.display = win ? 'inline-block' : 'none';
     }
 
-    // Event listeners
-    window.addEventListener('keydown', e => {
+    document.getElementById('startBtn').addEventListener('click', ()=>{
+      if (!running) { running = true; requestAnimationFrame(loop); }
+    });
+    document.getElementById('resetBtn').addEventListener('click', resetGame);
+    window.addEventListener('keydown', e=>{
       if (e.code === 'Space') {
         e.preventDefault();
-        if (!running) startGame();
+        if (!running) { running = true; requestAnimationFrame(loop); }
         jump();
       }
     });
-
-    canvas.addEventListener('click', () => {
-      if (!running) startGame();
+    canvas.addEventListener('click', ()=>{
+      if (!running) { running = true; requestAnimationFrame(loop); }
       jump();
     });
+    playAgain.addEventListener('click', ()=>{ resetGame(); running = true; requestAnimationFrame(loop); });
+    finalBtn.addEventListener('click', ()=>window.location.href='final.html');
 
-    startBtn.addEventListener('click', startGame);
-    resetBtn.addEventListener('click', resetGame);
-    playAgain.addEventListener('click', () => { resetGame(); startGame(); });
-    finalScreen.addEventListener('click', () => window.location.href = 'final.html');
-
+    // Na koniec: zastosuj bieżący język (po zainicjalizowaniu DOM)
+    applyTranslation(currentLang);
     resetGame();
   </script>
 </body>
 </html>
-
