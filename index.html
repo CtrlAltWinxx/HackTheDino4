@@ -48,7 +48,7 @@
     @keyframes bgMove { 0%,100%{background-position:20% 30%,70% 80%,0 0;}50%{background-position:22% 28%,68% 82%,100% 100%;} }
     @keyframes dotsFlicker {0%,100%{opacity:1;}50%{opacity:0.75;}}
 
-    /* 🔘 Language switch */
+    
     #lang-switch {
       position: fixed;
       top: 15px;
@@ -152,7 +152,7 @@
 </head>
 <body>
 
-  <!-- 🔘 Language switch -->
+  
   <div id="lang-switch">
     <button onclick="toggleLang()" aria-label="Change language">PL / EN</button>
   </div>
@@ -171,7 +171,7 @@
   </main>
 
   <script>
-    // 🔘 Language toggle
+    
     let currentLang = "PL";
     function toggleLang() {
       const h1 = document.querySelector('h1');
@@ -203,7 +203,7 @@
       }
     }
 
-    // 🔘 Navigate button
+    
     function goTo(page) {
       const btn = document.querySelector('button');
       btn.disabled = true;
@@ -211,7 +211,7 @@
       setTimeout(() => { window.location.href = page; }, 700);
     }
 
-    // 🔘 Animated digits
+    
     const digitsCount = window.innerWidth < 480 ? 0 : 40;
     const digits = [];
 
@@ -258,3 +258,4 @@
 
 </body>
 </html>
+
