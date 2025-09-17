@@ -84,7 +84,7 @@ button:hover, button:focus { background-color:#00ffcc; color:#000; text-shadow:n
 <body>
 <canvas id="matrixCanvas"></canvas>
 
-<!-- 🔘 Language switch -->
+
 <div id="lang-switch">
   <button onclick="toggleLang()" aria-label="Change language">PL / EN</button>
 </div>
@@ -98,7 +98,7 @@ button:hover, button:focus { background-color:#00ffcc; color:#000; text-shadow:n
 </div>
 
 <script>
-// 🔘 Language toggle
+
 let currentLang = "PL";
 function toggleLang() {
   const h1 = document.querySelector('h1');
@@ -121,9 +121,9 @@ function toggleLang() {
   }
 }
 
-// --- Ukryte hasło w postaci zakodowanej ---
-const encryptedCode = [90,96,108,114,118,91,92,92,95]; // zaszyfrowane liczby
-const shift = 42; // klucz przesunięcia
+
+const encryptedCode = [90,96,108,114,118,91,92,92,95]; 
+const shift = 42; 
 
 function decodeCode(arr){
   return arr.map(n => String.fromCharCode(n - shift)).join('');
@@ -134,13 +134,13 @@ function checkCode(){
   const correct = decodeCode(encryptedCode);
   const errorDiv = document.getElementById('error');
   if(input === correct){
-    window.location.href = "formularz.html"; // poprawny kod
+    window.location.href = "formularz.html"; 
   } else {
     errorDiv.style.display = "block";
   }
 }
 
-// --- Animacja matrix ---
+
 const canvas=document.getElementById('matrixCanvas');
 const ctx=canvas.getContext('2d');
 let width,height;
@@ -174,3 +174,4 @@ requestAnimationFrame(draw);
 </script>
 </body>
 </html>
+
