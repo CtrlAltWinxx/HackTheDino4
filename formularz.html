@@ -112,7 +112,7 @@ button:hover {
 <body>
 <canvas id="matrixCanvas"></canvas>
 
-<!-- 🔘 Language switch -->
+
 <div id="lang-switch">
   <button onclick="toggleLang()" aria-label="Change language">PL / EN</button>
 </div>
@@ -137,7 +137,7 @@ button:hover {
 </div>
 
 <script>
-// 🔘 Language toggle
+
 let currentLang = "PL";
 function toggleLang() {
   const title = document.getElementById('title');
@@ -160,20 +160,20 @@ function toggleLang() {
   }
 }
 
-// 🔘 Zachowanie języka po wejściu na stronę
+
 document.addEventListener('DOMContentLoaded', () => {
   const savedLang = localStorage.getItem('lang');
   if(savedLang && savedLang === 'EN'){
-    toggleLang(); // automatycznie ustaw angielski
+    toggleLang();
   }
 });
 
-// Wyświetlenie końcowego komunikatu
+
 function showFinalMessage() {
   document.getElementById('finalMessage').style.display = 'block';
 }
 
-// --- Animacja matrix ---
+
 const canvas = document.getElementById('matrixCanvas');
 const ctx = canvas.getContext('2d');
 let width, height;
@@ -209,3 +209,4 @@ requestAnimationFrame(draw);
 </script>
 </body>
 </html>
+
