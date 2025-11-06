@@ -126,7 +126,7 @@ button:hover {
   <button id="confirmBtn" onclick="showFinalMessage()">Potwierdzam wysłanie formularza</button>
 
   <div id="finalMessage">
-    Po wypełnieniu formularza, udaj się do <strong>pokoju 142 w Gmachu Głównym PW</strong>, aby odebrać swoją nagrodę! 🎉<br><br>
+    Po wypełnieniu formularza,<strong>skontaktuj się z nami na Instagramie</strong>, aby odebrać swoją nagrodę! 🎉<br><br>
     <div class="warning">
       <strong>
         Przy odbiorze należy pokazać potwierdzenie wysłania formularza.<br>
@@ -149,13 +149,13 @@ function toggleLang() {
     title.textContent="> CONGRATULATIONS!";
     mainText.textContent="Correct code! Fill out the form to claim your reward:";
     confirmBtn.textContent="I confirm submission of the form";
-    finalMsg.innerHTML = "After submitting the form, go to <strong>room 142 in Gmach Główny PW</strong> to claim your reward! 🎉<br><br><div class='warning'><strong>You must show the submission confirmation to receive the reward.</strong></div>";
+    finalMsg.innerHTML = "After submitting the form,<strong>contact us on Instagram</strong> to claim your reward! 🎉<br><br><div class='warning'><strong>You must show the submission confirmation to receive the reward.</strong></div>";
     currentLang="EN";
   } else {
     title.textContent="> GRATULACJE!";
     mainText.textContent="Kod poprawny! Wypełnij formularz, aby odebrać nagrodę:";
     confirmBtn.textContent="Potwierdzam wysłanie formularza";
-    finalMsg.innerHTML = "Po wypełnieniu formularza, udaj się do <strong>pokoju 142 w Gmachu Głównym PW</strong>, aby odebrać swoją nagrodę! 🎉<br><br><div class='warning'><strong>Przy odbiorze należy pokazać potwierdzenie wysłania formularza.<br>W innym wypadku nagroda nie zostanie wydana.</strong></div>";
+    finalMsg.innerHTML = "Po wypełnieniu formularza, <strong>skontaktuj się z nami na Instagramie</strong>, aby odebrać swoją nagrodę! 🎉<br><br><div class='warning'><strong>Przy odbiorze należy pokazać potwierdzenie wysłania formularza.<br>W innym wypadku nagroda nie zostanie wydana.</strong></div>";
     currentLang="PL";
   }
 }
@@ -209,5 +209,6 @@ requestAnimationFrame(draw);
 </script>
 </body>
 </html>
+
 
 
